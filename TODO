@@ -1,0 +1,5 @@
+Need to add a Makefile.PL
+--
+Maybe need to add appropriate in-module error-checking for the case when the
+accessor functions are called before a page is parsed with parse()
+--

@@ -102,11 +102,7 @@ sub noninteractive {
 sub number_in_list {
     my $number = shift;
     my $list   = shift;
-    map { return 1 if $number == $_ } @$list;
-    return 0;
-}
-
-sub interactive {
+    map { return 1 if "$number" eq "$_" } @$list;
     return 0;
 }
 

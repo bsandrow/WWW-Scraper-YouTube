@@ -7,12 +7,14 @@ use LWP::Simple qw/getstore/;
 use WWW::Scraper::YouTube;
 
 $|++;
-my @default_order = (35,34,6,5);
 
-my %opt = ();
+my %opt = (
+    order => [35,34,6,5],
+);
 GetOptions(
     \%opt,
     'i',
+    'order|o',
     ) or usage();
 
 interactive() if $opt{i};
@@ -34,7 +36,7 @@ sub noninteractive {
     $yt->parse($url);
     my $formats = $yt->formats();
 
-    for (@default_order) {
+    for (@{$opt{order}}) {
         if(number_in_list($_,$formats)) {
             my $direct_video_url = $yt->get_url($_);
             $url =~ m/v=([^&]+)/;
@@ -63,10 +65,14 @@ sub usage {
     print STDERR <<"HERE";
 getyt - YouTube Downloader
 
-getyt [-i] URL1 URL2 URL3
+getyt [options] URL1 URL2 URL3
 
 Options:
 
-    -i  Interactive Mode (unimplemented)
+    -i                 Interactive  Mode (unimplemented)
+    -o, --order=LIST   Provide a comma separated list of format codes
+                       describing the order of precedence to use when deciding
+                       which format to download the video in (when in
+                       non-interactive mode).
 HERE
 }

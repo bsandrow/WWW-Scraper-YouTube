@@ -1,0 +1,56 @@
+#!/usr/bin/perl -I../lib
+
+use strict;
+use warnings;
+
+use LWP::Simple qw/getstore/;;
+use WWW::Scraper::YouTube;
+
+system('which','zenity','>/dev/null');
+die "Needs zenity to run..." unless $? != 0;
+
+my $yt = new WWW::Scraper::YouTube;
+
+my $YT_URL = `zenity --entry --text='Enter the URL'`;
+chomp $YT_URL;
+
+print "YT_URL = $YT_URL\n";
+die "No URL given.\n" unless $YT_URL;
+
+$yt->parse($YT_URL);
+my $VIDEO_FORMATS = $yt->formats();
+
+my @cmdopts = qw(
+    --list
+    --title='WWW::Scraper::YouTube'
+    --text='Select the format to download'
+    --radiolist
+    --column ' '
+    --column 'Format'
+    --column 'Desc');
+
+for (@$VIDEO_FORMATS) {
+    push @cmdopts, "FALSE";
+    push @cmdopts, "$_";
+    my $tmp = $yt->get_format_name($_);
+    push @cmdopts, "'$tmp'";
+}
+
+my $optstr = join " ", @cmdopts;
+#print "Running: zenity $optstr\n";
+my $format_selection = `zenity $optstr`;
+chomp $format_selection;
+
+print "FORMAT SELECTION = $format_selection\n";
+die "No format selected" unless $format_selection;
+
+my $file = `zenity --file-selection --filename='$ENV{HOME}/'`;
+chomp $file;
+
+print "FILE = $file\n";
+die "File not given or invalid \n" unless $file;
+
+my $url = $yt->get_url($format_selection);
+system("wget '$url' -O '$file' 2>&1 | zenity --progress --pulsate --text='Downloading...'");
+
+#getstore($url,$file);

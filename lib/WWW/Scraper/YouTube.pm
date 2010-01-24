@@ -86,6 +86,15 @@ Returns a human-readable string that describes the particular format. Returns
 Returns a string describing the format of the video. Currently just returns the
 lowercase file-extension associated with the video format.
 
+=head2 get_title
+
+Returns the text between the <title></title> tags on the video page. The
+"YouTube - " header is removed and all control characters and/or non-printable
+characters are removed. (This is just to cover the bases since some of the
+titles have tab characters in them). This value is only populated B<after> a
+video page is parsed with parse(). Calling it prior to that is undefined
+behavior.
+
 =head2 get_url
 
 Return a download URL for the currently parsed YouTube video in the specified
@@ -298,5 +307,7 @@ sub is_page_parsed {
     return $self->{video_id} and $self->{token} and scalar $self->{formats};
 }
 
+# TODO Need to add error detection to make sure that the Url passed in for
+# parsing is actually a YouTube Url.
 
 1; # End of WWW::Scraper::YouTube

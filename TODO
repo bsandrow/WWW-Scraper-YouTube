@@ -1,3 +1,8 @@
 Maybe need to add appropriate in-module error-checking for the case when the
 accessor functions are called before a page is parsed with parse()
 --
+Look over the module documentation and make sure it's ok
+--
+Add versioning (and a --version) to the getyt and getyt-gui scripts
+--
+Maybe add a '--quiet' option to getyt to turn off all of the output

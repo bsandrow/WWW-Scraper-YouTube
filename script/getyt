@@ -1,0 +1,72 @@
+#!/usr/bin/perl -w -I../lib
+
+use strict;
+use warnings;
+use Getopt::Long;
+use LWP::Simple qw/getstore/;
+use WWW::Scraper::YouTube;
+
+$|++;
+my @default_order = (35,34,6,5);
+
+my %opt = ();
+GetOptions(
+    \%opt,
+    'i',
+    ) or usage();
+
+interactive() if $opt{i};
+
+
+for (@ARGV) {
+    if ($opt{i}) {
+        exit(interactive($_));
+    }
+    else {
+        exit(noninteractive($_));
+    }
+}
+
+
+sub noninteractive {
+    my $url = shift;
+    my $yt = new WWW::Scraper::YouTube;
+    $yt->parse($url);
+    my $formats = $yt->formats();
+
+    for (@default_order) {
+        if(number_in_list($_,$formats)) {
+            my $direct_video_url = $yt->get_url($_);
+            $url =~ m/v=([^&]+)/;
+            my $file = "@{[ $yt->get_title() ]}.@{[ $yt->format_filetype($_) ]}";
+            print STDOUT "Downloading '$url' -> '$file'\n";
+            getstore($direct_video_url,$file);
+            return 0;
+        }
+    }
+    print STDOUT "Avaialble video formats not in 'auto try' list.\n";
+    return 1;
+}
+
+sub number_in_list {
+    my $number = shift;
+    my $list   = shift;
+    map { return 1 if $number == $_ } @$list;
+    return 0;
+}
+
+sub interactive {
+    return 0;
+}
+
+sub usage {
+    print STDERR <<"HERE";
+getyt - YouTube Downloader
+
+getyt [-i] URL1 URL2 URL3
+
+Options:
+
+    -i  Interactive Mode (unimplemented)
+HERE
+}

@@ -46,7 +46,8 @@ Example:
     print "Available:\n";
     for (@$formats) {
         print "\t$_: ";
-        print $yt->get_format_name($_);
+        print $yt->format_description($_);
+        print $yt->format_type($_);
         print "\n";
     }
 
@@ -75,10 +76,15 @@ Parses a provided URL and internally stores all the goodies it finds.
 Returns an ARRAYREF, which containts the list of formats available for the
 currently parsed YouTube video. Croaks if there is no page parsed.
 
-=head2 get_format_name
+=head2 format_description
 
-Returns a descriptive name for the format number provided. Returns "Unknown" as
-the format if we don't know that it is.
+Returns a human-readable string that describes the particular format. Returns
+"Unknown" if the format doesn't exist or doesn't have a description.
+
+=head2 format_type
+
+Returns a string describing the format of the video. Currently just returns the
+lowercase file-extension associated with the video format.
 
 =head2 get_url
 
@@ -139,17 +145,44 @@ use Carp qw/
     croak
 /;
 
-our %format_labels = (
-    5  => "Low Definition, Low Quality (FLV, Flash Video 1 (Sorenson Spark), MP3)",
-    6  => "High Quality (FLV, Flash Video 1 (Sorenson Spark), MP3)",
-    13 => "Low Quality Mobile Video (3GP, H.263, AMR)",
-    17 => "High Quality Mobile Video (3GP, H.263, AAC)",
-    18 => "High Quality, iPod Compatible (MP4, H.264, AAC)",
-    22 => "High Definition, High Quality (720p) (MP4, H.264, AAC)",
-    34 => "Low Definition, High Quality (FLV, H.264, AAC)",
-    35 => "Standard Definition, High Quality (480p) (FLV, H.264, AAC)",
-    37 => "High Definition, Super High Quality (1080p) (MP4, H.264, AAC)",
-);
+my $formats = {
+    5 => {
+        desc => "Low Definition, Low Quality (FLV, Flash Video 1 (Sorenson Spark), MP3)",
+        type => "flv",
+        },
+    6 => {
+        desc => "High Quality (FLV, Flash Video 1 (Sorenson Spark), MP3)",
+        type => "flv",
+        },
+    13 => {
+        desc => "Low Quality Mobile Video (3GP, H.263, AMR)",
+        type => "3gp",
+        },
+    17 => {
+        desc => "High Quality Mobile Video (3GP, H.263, AAC)",
+        type => "3gp",
+        },
+    18 => {
+        desc => "High Quality, iPod Compatible (MP4, H.264, AAC)",
+        type => "mp4",
+        },
+    22 => {
+        desc => "High Definition, High Quality (720p) (MP4, H.264, AAC)",
+        type => "mp4",
+        },
+    34 => {
+        desc => "Low Definition, High Quality (FLV, H.264, AAC)",
+        type => "flv",
+        },
+    35 => {
+        desc => "Standard Definition, High Quality (480p) (FLV, H.264, AAC)",
+        type => "flv",
+        },
+    37 => {
+        desc => "High Definition, Super High Quality (1080p) (MP4, H.264, AAC)",
+        type => "mp4",
+        },
+};
 
 our $VERSION = 0.1;
 
@@ -218,10 +251,17 @@ sub formats {
     return [ @{$self->{formats}} ];
 }
 
-sub get_format_name {
-    my $self   = shift;
-    my $format = shift;
-    return $format_labels{$format} if exists $format_labels{$format};
+sub format_description {
+    my $self = shift;
+    my $format_no = shift;
+    return $formats->{$format_no}->{desc} if exists $formats->{$format_no}->{desc};
+    return "Unknown";
+}
+
+sub format_filetype {
+    my $self = shift;
+    my $format_no = shift;
+    return $formats->{$format_no}->{type} if exists $formats->{$format_no}->{type};
     return "Unknown";
 }
 

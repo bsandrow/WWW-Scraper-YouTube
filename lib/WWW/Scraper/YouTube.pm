@@ -211,6 +211,17 @@ sub __create_ua {
     return 1;
 }
 
+sub __parse_title {
+    my $self = shift;
+    my $content = shift;
+    my $title = ($content =~ m{<title>(.+?)\s*</title>}sm)[0];
+    chomp $title;
+    $title =~ s/^\s+YouTube\s+-\s+//sm;
+    $title =~ s/[[:^print:]]|[[:cntrl:]]//gm;
+    $self->{title} = $title;
+    return 1;
+}
+
 sub parse {
     my $self = shift;
     my $url  = shift;
@@ -218,6 +229,9 @@ sub parse {
     # grab the page
     my $response = $self->{ua}->get($url);
     return undef unless $response->is_success();
+
+    # grab the title of the page
+    $self->__parse_title($response->content());
 
     # process all of the yt.setConfig entries
     my %ytvars = ();
@@ -271,6 +285,12 @@ sub get_url {
     return undef unless $self->is_page_parsed();
     return "http://www.youtube.com/get_video?video_id=$self->{video_id}&t=$self->{token}&fmt=$format" if $format;
     return "http://www.youtube.com/get_video?video_id=$self->{video_id}&t=$self->{token}";
+}
+
+sub get_title {
+    my $self = shift;
+    return $self->{title} if exists $self->{title};
+    return undef;
 }
 
 sub is_page_parsed {

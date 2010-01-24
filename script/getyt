@@ -29,6 +29,55 @@ for (@ARGV) {
     }
 }
 
+sub interactive {
+    my $url = shift;
+    my $yt = new WWW:Scraper::YouTube;
+    $yt->parse($url);
+    my $formats = $yt->formats();
+
+    # Prompt for format selection
+    my $selected_format;
+    for (@$formats) {
+        print STDOUT "${_}: @{[ $yt->format_description($_) ]}\n";
+    }
+    print STDOUT "Select a format: ";
+    while(<STDIN>) {
+        chomp;
+        if (number_in_list($_,$formats) {
+            $selected_format = $_;
+            last;
+        }
+        print STDOUT "Invalid format selected!\n";
+        print STDOUT "Select a format: ";
+    }
+
+    # Prompt for a filename
+    my $filename = "@{[ $yt->get_title() ]}.@{[ $yt->format_filetype($_) ]}";
+    print STDOUT "Please enter a filename (default: "$filename"): ";
+    while(<STDIN>) {
+        chomp;
+        if (-w "$_") {
+            $filename = $_;
+        }
+        print STDOUT "Unable to use that filename!\n";
+        print STDOUT "Please enter a filename (default: "$filename"): ";
+    }
+    my $direct_video_url = $yt->get_url($_);
+
+    print STDOUT "Video Page Url: $url\n";
+    print STDOUT "Video Direct Url: $direct_video_url\n";
+    print STDOUT "Output file: $filename\n";
+
+    print STDOUT "Downloading file...\n";
+    my $rc = getstore($direct_video_url,$file);
+    if (is_success($rc)) {
+        print STDOUT "Download successful.\n";
+    }
+    else {
+        print STDOUT "Download failed. [HTTP Response Code = $rc]\n";
+    }
+    return;
+}
 
 sub noninteractive {
     my $url = shift;

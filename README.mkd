@@ -1,0 +1,14 @@
+YouTube Scraper
+===============
+
+The YouTube scraper is a webpage scraper that parses out the relevant
+information from a YouTube video page. It's main focus is just to push all of
+the main functionality of the getyt and getyt-gui scripts into a module.
+
+
+License
+-------
+
+(c) 2010 Brandon Sandrowicz <brandon@sandrowicz.org>
+
+This code is licensed under the MIT License. See LICENSE for the full text.

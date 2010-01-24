@@ -1,4 +1,4 @@
-# Copyright (c) <2009> <Brandon Sandrowicz>
+# Copyright (c) <2010> Brandon Sandrowicz <brandon@sandrowicz.org>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -99,7 +99,7 @@ parsed by the current object.
 
 =head1 LICENSE
 
-Copyright (c) <2009> <Brandon Sandrowicz>
+Copyright (c) <2010> Brandon Sandrowicz <brandon@sandrowicz.org>
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

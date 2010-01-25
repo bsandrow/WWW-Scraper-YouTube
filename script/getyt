@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use Cwd;
 use Getopt::Long;
 use LWP::Simple qw/getstore/;
 use WWW::Scraper::YouTube;
@@ -91,13 +92,24 @@ sub noninteractive {
         if(number_in_list($_,$formats)) {
             my $direct_video_url = $yt->get_url($_);
             my $file             = determine_filename($yt,$_);
+            my $dir              = $opt{dir} ? $opt{dir} : getcwd();
+
+            unless(-w $file) {
+                print STDERR "File '$file' is not writeable.";
+                return 1;
+            }
+
+            unless(-w $dir) {
+                print STDERR "Directory '$dir' does not exist or is not writeable. Skipping download.";
+                return 1;
+            }
 
             print STDOUT "Downloading '$url' -> '$file'\n";
-            getstore($direct_video_url,$file);
+            getstore($direct_video_url,"$dir/$file");
             return 0;
         }
     }
-    print STDOUT "Avaialble video formats not in 'auto try' list.\n";
+    print STDERR "Avaialble video formats not in 'auto try' list.\n";
     return 1;
 }
 

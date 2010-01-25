@@ -209,7 +209,6 @@ sub new {
 
     return bless($self,$class);
 }
-
 sub __create_ua {
     my $self = shift;
     my $ua    = LWP::UserAgent->new();
@@ -219,18 +218,12 @@ sub __create_ua {
     $self->{ua} = $ua;
     return 1;
 }
-
-sub __parse_title {
+sub is_page_parsed {
     my $self = shift;
-    my $content = shift;
-    my $title = ($content =~ m{<title>(.+?)\s*</title>}sm)[0];
-    chomp $title;
-    $title =~ s/^\s+YouTube\s+-\s+//sm;
-    $title =~ s/[[:^print:]]|[[:cntrl:]]//gm;
-    $self->{title} = $title;
-    return 1;
+    return $self->{video_id} and $self->{token} and scalar $self->{formats};
 }
 
+# misc
 sub parse {
     my $self = shift;
     my $url  = shift;
@@ -238,6 +231,9 @@ sub parse {
     # grab the page
     my $response = $self->{ua}->get($url);
     return undef unless $response->is_success();
+
+    # grab the video id
+    $self->__parse_video_id($url);
 
     # grab the title of the page
     $self->__parse_title($response->content());
@@ -267,27 +263,6 @@ sub parse {
     $self->{token}    = $SWF_ARGS->{t};
     return 1;
 }
-
-sub formats {
-    my $self = shift;
-    croak "No page parsed" unless $self->is_page_parsed();
-    return [ @{$self->{formats}} ];
-}
-
-sub format_description {
-    my $self = shift;
-    my $format_no = shift;
-    return $formats->{$format_no}->{desc} if exists $formats->{$format_no}->{desc};
-    return "Unknown";
-}
-
-sub format_filetype {
-    my $self = shift;
-    my $format_no = shift;
-    return $formats->{$format_no}->{type} if exists $formats->{$format_no}->{type};
-    return "Unknown";
-}
-
 sub get_url {
     my $self   = shift;
     my $format = shift;
@@ -296,15 +271,59 @@ sub get_url {
     return "http://www.youtube.com/get_video?video_id=$self->{video_id}&t=$self->{token}";
 }
 
+# title
+sub __parse_title {
+    my $self = shift;
+    my $content = shift;
+    my $title = ($content =~ m{<title>(.+?)\s*</title>}sm)[0];
+    chomp $title;
+    $title =~ s/^\s+YouTube\s+-\s+//sm;
+    $title =~ s/[[:^print:]]|[[:cntrl:]]//gm;
+    $self->{title} = $title;
+    return 1;
+}
 sub get_title {
     my $self = shift;
     return $self->{title} if exists $self->{title};
     return undef;
 }
 
-sub is_page_parsed {
+# video id
+sub __parse_video_id {
     my $self = shift;
-    return $self->{video_id} and $self->{token} and scalar $self->{formats};
+    my $url  = shift;
+    my @parts = split /&/, (split /?/, $url)[1];
+    for (@parts) {
+        my ($k,$v) = split /=/, $_;
+        if ($k eq "v") {
+            $self->{video_id} = $v;
+            return 1;
+        }
+    }
+    return 0;
+}
+sub get_video_id {
+    my $self = shift;
+    return $self->is_page_parsed ? $self->{video_id} : undef;
+}
+
+# formats
+sub formats {
+    my $self = shift;
+    return undef unless $self->is_page_parsed;
+    return @{$self->{formats}};
+}
+sub format_description {
+    my $self = shift;
+    my $format_no = shift;
+    return $formats->{$format_no}->{desc} if exists $formats->{$format_no}->{desc};
+    return "Unknown";
+}
+sub format_filetype {
+    my $self = shift;
+    my $format_no = shift;
+    return $formats->{$format_no}->{type} if exists $formats->{$format_no}->{type};
+    return "Unknown";
 }
 
 # TODO Need to add error detection to make sure that the Url passed in for

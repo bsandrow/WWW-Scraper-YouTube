@@ -14,11 +14,12 @@ my %opt = (
 GetOptions(
     \%opt,
     'i',
-    'order|o',
+    'order|o=s',
+    'help|h',
+    'dir|d=s',
+    'title!|t',
     ) or usage();
-
-interactive() if $opt{i};
-
+usage() if $opt{help};
 
 for (@ARGV) {
     if ($opt{i}) {
@@ -79,6 +80,7 @@ sub interactive {
     return;
 }
 
+# NON-INTERACTIVE
 sub noninteractive {
     my $url = shift;
     my $yt = new WWW::Scraper::YouTube;
@@ -88,8 +90,8 @@ sub noninteractive {
     for (@{$opt{order}}) {
         if(number_in_list($_,$formats)) {
             my $direct_video_url = $yt->get_url($_);
-            $url =~ m/v=([^&]+)/;
-            my $file = "@{[ $yt->get_title() ]}.@{[ $yt->format_filetype($_) ]}";
+            my $file             = determine_filename($yt,$_);
+
             print STDOUT "Downloading '$url' -> '$file'\n";
             getstore($direct_video_url,$file);
             return 0;
@@ -99,13 +101,23 @@ sub noninteractive {
     return 1;
 }
 
+# MISC
+sub determine_filename {
+    my $yt = shift;
+    my $format = shift;
+    if($opts{title}) { 
+        return "@{[ $yt->get_title() ]}.@{[ $yt->format_filetype($format) ]}";
+    }
+    else {
+        return "@{[ $yt->get_video_id() ]}.@{[ $yt->format_filetype($format) ]}";
+    }
+}
 sub number_in_list {
     my $number = shift;
     my $list   = shift;
     map { return 1 if "$number" eq "$_" } @$list;
     return 0;
 }
-
 sub usage {
     print STDERR <<"HERE";
 getyt - YouTube Downloader
@@ -119,5 +131,8 @@ Options:
                        describing the order of precedence to use when deciding
                        which format to download the video in (when in
                        non-interactive mode).
+    -d, --dir=DIR      Specify a directory to download the files to.
+    -t, --title        Use the title of the video for the filename. [default]
+        --notitle      Use the id of the video for the filename.
 HERE
 }

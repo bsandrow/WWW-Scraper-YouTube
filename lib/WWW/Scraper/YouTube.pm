@@ -292,7 +292,7 @@ sub get_title {
 sub __parse_video_id {
     my $self = shift;
     my $url  = shift;
-    my @parts = split /&/, (split /?/, $url)[1];
+    my @parts = split /&/, (split /\?/, $url)[1];
     for (@parts) {
         my ($k,$v) = split /=/, $_;
         if ($k eq "v") {
